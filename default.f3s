@@ -1,0 +1,26 @@
+b:[name = $, contents = {
+	f:[name = krn.bin, actual = bin/kernel.bin]
+}]
+
+b:[name = !, contents = {
+	b:[name = prgm, contents = {
+		f:[name = frash, actual = prgm/frash/frash, #executable]
+		f:[name = echo, actual = prgm/echo/echo, #executable]
+		f:[name = ls, actual = prgm/ls/ls, #executable]
+		f:[name = cls, actual = prgm/cls/cls, #executable]
+	}]
+
+	b:[name = sys, #protected, contents = {
+		b:[#protected, name = drvr, contents = {
+			f:[name = cga_text.drvr, actual = drvr/cga_text/cga_text.drvr, #protected]
+			f:[name = keyboard.drvr, actual = drvr/keyboard/keyboard.drvr, #protected]
+		}]
+		
+		b:[name = prgm, contents = {
+			f:[name = start, actual = prgm/start/start, #executable, #protected]
+		}]
+
+		f:[name = start_drvrs, actual = files/start_drvrs, #protected]
+		f:[name = start_prgms, actual = files/start_prgms, #protected]
+	}]
+}]
