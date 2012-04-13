@@ -7,25 +7,31 @@
 
 ; sets up tss for stack handling
 setup_stack_handling:
-	push 0x89
-	push 0x68
+	push 0x8940
+	push 0x68	
 	push STACK_SEG_TSS
 	call add_gdt_entry
 	add esp, 12
 	
-	; TODO add idt entry
+	mov si, ax
+	mov eax, 11
+	xor edx, edx
+	mov bl, 0x8e
+	call set_idt_entry
 	
 	mov dword [STACK_SEG_TSS + 4], STACK_SEG_STACK
-	mov word [STACK_SEG_TSS + 0xa], KERN_DS
+	mov word [STACK_SEG_TSS + 0x8], KERN_DS
 	mov eax, cr3
 	mov [STACK_SEG_TSS + 0x1c], eax
 	mov dword [STACK_SEG_TSS + 0x20], stack_fault
+	mov word [STACK_SEG_TSS + 0x4c], KERN_CS
 	
 	ret
 
 
 ; handles stack overflow, resizes the stack and causes page fault
 stack_fault:
+	jmp $
 	push eax
 	push ebx
 	push ecx

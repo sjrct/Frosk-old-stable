@@ -30,7 +30,7 @@
 
 #define COL4_MAKE(F,B) ((B << 4) | F)
 
-#define textdrvr_init()    __drvrcall0(0,_DRVR_TEXT_ID,X)
+#define textdrvr_init()    __drvrcall0(0,_DRVR_TEXT_ID)
 #define putc(X)            __drvrcall1(1,_DRVR_TEXT_ID,X)
 #define puts(X)            __drvrcall1(2,_DRVR_TEXT_ID,(int)X)
 #define puth(X)            __drvrcall1(3,_DRVR_TEXT_ID,X)

@@ -29,7 +29,7 @@ setup_idt:
 	mov edx, gpf
 	mov eax, 0xd
 	call set_idt_entry
-	
+		
 	; trap gates
 	mov bl, 0x8f
 	mov edx, timer_int
@@ -55,6 +55,8 @@ gpf:
 	mov ds, ax
 	mov es, ax
 	mov gs, ax
+	call kputh
+	add esp, 4
 	call kputh
 	call knewline
 	push gpf_msg

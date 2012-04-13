@@ -136,7 +136,7 @@ ata_reset:
 ; TODO: should be adjusted for relative lba addressing based on the partition
 ;		also, does not work after call to ata_identify, fix dis
 ;
-;   read_ata_pio(dest, drive, lba, sector_count)
+;   ata_read_pio(dest, drive, lba, sector_count)
 ata_read_pio:
 	push ebp
 	mov ebp, esp
@@ -240,3 +240,112 @@ ata_read_pio:
 	pop ebp
 	ret
 
+
+; this function is for writing from the disk drive with ata pio mode (28-bit lba)
+; returns the number of bytes writen
+; TODO: should be adjusted for relative lba addressing based on the partition
+;		also, does not work after call to ata_identify, fix dis
+;
+;   ata_write_pio(source, drive, lba, sector_count)
+ata_write_pio:
+	push ebp
+	mov ebp, esp
+	push esi
+	push ebx
+	pushf
+
+	mov ecx, [ebp + 12]
+	mov dx, cx
+	not dx
+	and dx, 0x80
+	add dx, 0x176
+
+	; set specified drive & lba on & bits 24-27 of lba address
+	mov al, cl
+	and al, 1
+	shl al, 4
+	or al, 0xe0
+	mov ecx, [ebp + 16]
+	shr ecx, 24
+	and cl, 0xf
+	or al, cl
+	out dx, al
+	
+	; set sector count
+	sub dx, 4
+	mov eax, [ebp + 20]
+	out dx, al
+	
+	; set bits 0-23 of lba address
+	inc dx
+	mov eax, [ebp + 16]
+	out dx, al
+	shr eax, 8
+	inc dx
+	out dx, al
+	shr eax, 8
+	inc dx
+	out dx, al
+	
+	; send write command
+	add dx, 2
+	mov al, 0x30
+	out dx, al
+	
+	; delay for 400ns for command to register
+	mov ecx, 4
+.delay400ns:
+	in al, dx
+	loop .delay400ns
+	
+	cld
+		
+	; poll status while drive is busy
+.wait_until_done:
+	pause
+	in al, dx
+	test al, 0x80
+	jne .wait_until_done
+	
+	; check for error
+	in al, dx
+	test al, 1
+	jne .return_err
+	
+	push ds
+	mov ax, gs
+	mov ds, ax
+
+	; write data
+	mov ebx, [ebp + 20]
+	mov esi, [ebp + 8]
+.read_loop:
+	in al, dx
+	test al, 8
+	je .read_loop_break
+	sub dx, 7
+	mov ecx, 0x100
+	rep outsw
+	add dx, 7
+	dec ebx
+	test ebx, ebx
+	jne .read_loop
+.read_loop_break:
+
+	pop ds
+
+	; return
+	mov ecx, [ebp + 8]
+	mov eax, esi
+	sub eax, ecx
+	jmp .return
+.return_err:
+	sub dx, 6
+	in al, dx
+	or eax, 0xffffff00
+.return:
+	popf
+	pop ebx
+	pop esi
+	pop ebp
+	ret

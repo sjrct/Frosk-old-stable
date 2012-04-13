@@ -14,7 +14,7 @@ syscall_int:
 	push gs
 	push ebp
 	mov ebp, esp
-	
+
 	mov dx, ds
 	mov gs, dx
 	mov dx, KERN_DS
@@ -30,7 +30,7 @@ syscall_int:
 .push_loop_break:
 
 	call [syscall_tbl + eax * 8]
-	
+
 	mov esp, ebp
 	pop ebp
 	pop gs

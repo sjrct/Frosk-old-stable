@@ -1,0 +1,36 @@
+# Template for frosk program makefiles, designed by sjrct
+# Everything that is in <such brackets> should be replaced
+# Furthermore, the program name (name of dir and exec) should be placed in the
+#  main frosk Makefile
+
+#
+# Makefile for <program name>
+#
+# written by <author>
+#
+
+SHELL   = /bin/sh
+
+CC      = gcc
+TARGET  = <program name, same as dir>
+
+TSRCS   = <c file names>
+SRCS    = $(TSRCS:%=src/%)
+TOBJS   = $(SRCS:.c=.o)
+OBJS    = $(TOBJS:src/%=obj/%)
+
+.PHONY: all
+all: obj $(SRCS) $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) $(FROSK_LDFL) -o $@
+
+obj:
+	mkdir obj
+
+obj/%.o: src/%.c
+	$(CC) $(FROSK_CCFL) $< -o $@
+
+.PHONY: clean
+clean:
+	rm $(OBJS) $(TARGET)

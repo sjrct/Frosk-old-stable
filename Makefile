@@ -8,16 +8,15 @@ SHELL       = /bin/sh
 TARGET      = frosk.img
 
 # name of dir/exec in prgm directory (for programs on frosk)
-PRGMS_B     = start frash echo ls cls
+PRGMS_B     = start frash echo ls cls scdisp mkdir lddrvr sc
 
 # name of dir/exec in util directory (for programs to help build frosk)
 UTILS_B     = f300-builder
 
 # name of dir/binary in drivers directory (for drivers)
-DRVRS_B     = cga_text keyboard
+DRVRS_B     = cga_text keyboard vga
 
 # default flags for C program compilation for frosk, provided for convience
-# assumes that the compiler/linker is called two directory levels down
 export TOPDIR     = $(shell pwd)
 export FROSK_CCFL = -c -Wall -nostdinc -fno-builtin -m32 -I$(TOPDIR)/include \
                     -fno-stack-protector

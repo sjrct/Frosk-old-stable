@@ -19,7 +19,7 @@ typedef struct {
 	long rem;
 } ldiv_t;
 
-void srand(unsigned int);
+void srand(unsigned int seed);
 int rand();
 
 void * malloc(unsigned size);
@@ -29,5 +29,7 @@ int abs(int);
 long labs(long);
 div_t div(int, int);
 ldiv_t ldiv(long, long);
+
+void exit(int status);
 
 #endif

@@ -31,6 +31,9 @@ alloc_virt_pgs:
 	cmp eax, edx
 	jne .search_loop
 	; TODO: PANIC!
+	push 0x1eaf1ead
+	call kputh
+	jmp $
 .found:
 
 	cmp ecx, [eax]

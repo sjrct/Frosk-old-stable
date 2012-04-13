@@ -56,23 +56,17 @@ page_fault:
 
 	mov ax, KERN_DS
 	mov gs, ax
-
-;	push dword [esp + 16]
-;	call kputh
-;	mov eax, cr2
-;	push eax
-;	call kputh
-;	call knewline
-;	add esp, 8
 	
 	; check if something not present or protection fault
 	mov eax, [esp + 16]
 	test eax, 1
 	jz .not_present
-	; TODO page protection fault
+	
+	; page protection fault (stack underflow)
 	push 0x1337c0de
 	call kputh
 	jmp $
+	
 .not_present:
 
 	; get pte and pdte

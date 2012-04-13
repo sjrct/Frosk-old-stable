@@ -102,6 +102,9 @@ get_free_phys_page:
 	mov eax, MEM_BITMAP_LOC
 	jmp .search_loop
 .nothing_left:
+	push 0xb00bbeef
+	call kputh
+	jmp $
 	; TODO handle no pages left
 	xor eax, eax
 .search_loop_break:

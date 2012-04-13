@@ -14,6 +14,6 @@ DIRECTORIES:
     prgm    Contains programs for frosk.
     util    Contains programs that help build frosk.
 
-BUGS (Not complete):
+BUGS (Not complete list):
     -Will only work with drive number 0 (Primary master ATA)
     -Does not take partitions into account. 

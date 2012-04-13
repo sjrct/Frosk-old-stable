@@ -145,7 +145,7 @@ f300_locate_node:
 .relative:
 	
 	push ecx
-	mov eax, [gs:8] ; current branch
+	mov eax, [gs:8] ; current directory
 	push dword [eax + 8]
 	call f300_resolve_entry_ptr
 	mov [esp], eax
@@ -205,11 +205,115 @@ f300_find_next:
 	ret
 
 
+; allocates an 16 bytes entry in the file system table
+;  f300_alloc_entry()
+f300_alloc_entry:
+	push ebx
+	push esi
+	xor esi, esi
+	mov ebx, [first_fs_blocks]
+	mov eax, 0x1010
+.block_loop:
+	mov edx, ebx
+	and edx, 0xc
+	cmp edx, 0xc
+	jne .blocks_good
+	; TODO
+.blocks_good:
+	mov edx, [ebx]
+	test edx, edx
+	jnz .block_good
+	; TODO
+.block_good:
+	sub eax, 0xff0
+.entry_loop:
+	test byte [edx + eax], 1
+	jz .found
+	test byte [edx + eax], 2
+	jz .not_string
+	xor ecx, ecx
+	mov cl, [edx + eax + 1]
+	dec ecx
+	shl ecx, 4
+	add eax, ecx
+.not_string:
+	add eax, 0x10
+	cmp eax, 0x1000	; page size
+	jne .entry_loop
+	add ebx, 4
+	inc esi
+	jmp .block_loop
+.found:
+	shr eax, 4
+	or eax, esi
+	pop esi
+	pop ebx
+	ret
+
+
 ; creates an empty node in the f300 file system table
 ;  f300_add_node(parent, flags, name)
 f300_add_node:
-	; TODO
+	push esi
+	call f300_alloc_entry
+	mov esi, eax
+	mov eax, [esp + 8]
+
+	mov ecx, [eax + 8]
+	test ecx, ecx
+	jz .first_file
+	push ecx
+	call f300_resolve_entry_ptr
+	add esp, 4
+.search_loop:
+	mov ecx, [eax + 12]
+	test ecx, ecx
+	jz .found
+	push ecx
+	call f300_resolve_entry_ptr
+	add esp, 4
+	jmp .search_loop
+.found:
+	mov [eax + 12], esi
+.after_found:
+
+	push esi
+	call f300_resolve_entry_ptr
+	add esp, 4
+	
+	mov edx, [esp + 12]
+	or edx, 1
+	mov [eax], dx
+	mov dword [eax + 8], 0
+	mov dword [eax + 12], 0
+
+	; name
+	; TODO fix for names above 14 bytes
+	mov esi, eax
+	call f300_alloc_entry
+	mov [esi + 4], eax
+	push eax
+	call f300_resolve_entry_ptr
+	add esp, 4
+	mov byte [eax], 3
+	mov byte [eax + 1], 1
+	mov ecx, [esp + 16]
+	add eax, 2
+.str_copy:
+	mov dl, [gs:ecx]
+	mov [eax], dl
+	inc ecx
+	inc eax
+	test dl, dl
+	jnz .str_copy
+	
+	mov eax, esi
+
+	pop esi
 	ret
+.first_file:
+	mov [eax + 8], esi
+	jmp .after_found
 
 
 ; remove a node from the file system table
@@ -222,19 +326,5 @@ f300_remove_node:
 ; appends a specified amount of blocks to a specified file
 ;  append_file(node, blocks)
 append_file:
-	; TODO
-	ret
-
-
-; adds an entry to the name string table
-;  f300_add_nte(name*, name_size)
-f300_add_nse:
-	; TODO
-	ret
-
-
-; remove a name string entry
-;  f300_remove_nte(name_ptr)
-f300_remove_nse:
 	; TODO
 	ret

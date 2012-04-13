@@ -18,6 +18,9 @@ first_process: dd 0
 first_thread:  dd 0
 current_thread: dd 0
 
+process_lists:
+	times 8 dd 0
+
 ; dwords for driver managment
 drvr_tree_head: dd 0
 
@@ -45,9 +48,15 @@ syscall_tbl:
 	dd 1
 	dd f300_find_next	; 10
 	dd 1
+	dd ata_write_pio
+	dd 4
+	dd f300_add_node
+	dd 3
+	dd proc_finish
+	dd 0
 	dd kputh
 	dd 1
-	dd kputs
+	dd kputs		; 15
 	dd 1
 
 ; for the file system

@@ -65,35 +65,25 @@ key_int:
 	mov ax, [es:eax + 6]
 	mov ds, ax
 
-	xor edx, edx
+	xor eax, eax
 	in al, 0x60
-	mov dl, al
-	cmp al, 0xe0
-	jne .not_escaped
-	in al, 0x60
-	mov dh, dl
-	jmp .escaped
-.not_escaped:
-	push ebx
-	mov ebx, 2
+	mov edx, 2
 	cmp al, 0x3a	; caps lock
 	je .switch_led_state
-	dec ebx
+	dec edx
 	cmp al, 0x45	; num lock
 	je .switch_led_state
-	dec ebx
+	dec edx
 	cmp al, 0x46	; scroll lock
 	je .switch_led_state
 .after_leds:
-	pop ebx
-.escaped:
 
 	mov ecx, [buffer_size - data_start]
 	cmp ecx, BUF_MAX_SIZE
 	jae .overflow
 
-	mov [(buffer - data_start) + ecx], dx
-	add ecx, 2
+	mov [(buffer - data_start) + ecx], al
+	inc ecx
 	mov [buffer_size - data_start], ecx
 
 .overflow:
@@ -108,6 +98,7 @@ key_int:
 	pop eax
 	iret
 .switch_led_state:
+	push eax
 	mov al, 0xed
 	out 0x64, al
 	mov al, [led_states]
@@ -115,6 +106,7 @@ key_int:
 	mov [led_states], al
 	out 0x60, al
 	in al, 0x60
+	pop eax
 	jmp .after_leds
 	
 
@@ -130,8 +122,8 @@ getsc:
 .wait_loop_break:
 
 	xor eax, eax
-	sub ecx, 2
-	mov ax, [(buffer - data_start) + ecx]
+	dec ecx
+	mov al, [(buffer - data_start) + ecx]
 	mov [buffer_size - data_start], ecx
 	ret
 
@@ -145,8 +137,8 @@ trygetsc:
 	jmp .return	
 .not_empty:
 	xor eax, eax
+	dec ecx
 	mov ax, [(buffer - data_start) + ecx]
-	sub ecx, 2
 	mov [buffer_size - data_start], ecx
 .return:
 	ret

@@ -19,7 +19,7 @@
 ; thread structure:
 ;   byte status
 ;   byte priority
-;   word ss
+;   word 
 ;   dword esp
 ;   dword proc handle
 ;   dword next
@@ -99,14 +99,14 @@ timer_int:
 	mov eax, [current_thread]
 	test eax, eax
 	jz .ct_null
-	mov [eax + 2], ss
 	mov [eax + 4], esp
 .ct_null:
 	mov [current_thread], ecx
 
 	; get new stack
-	mov ss, [ecx + 2]
 	mov esp, [ecx + 4]
+	mov ecx, [ecx + 8]
+	mov ss, [ecx + 2]
 
 	; goto new thread
 	mov al, bl
@@ -155,7 +155,9 @@ create_process:
 	mov edi, eax
 	call kalloc_16
 	mov esi, eax
-	mov ecx, [first_process]
+	shr esi, 4
+	and esi, 7
+	mov ecx, [process_lists + esi * 4]
 	mov [eax + 8], edi
 	jcxz .fp_null
 	mov edx, [ecx + 12]
@@ -163,9 +165,10 @@ create_process:
 	mov [eax + 12], edx
 	jmp .fp_not_null
 .fp_null:
-	mov [first_process], eax
+	mov [process_lists + esi * 4], eax
 	mov [eax + 12], eax
 .fp_not_null:
+	mov esi, eax
 	
 	; alloc virt code pages
 	mov ecx, [gs:ebx + 8]
@@ -212,8 +215,8 @@ create_process:
 	rep movsb
 	
 	pop ds
-	pop edi
-	
+	mov edi, [esp]
+
 	; TODO: fix so default is only used when alternative not specified
 	; alloc virt data pages
 	mov dword [edi + 12], DEF_HS_SPREAD
@@ -223,10 +226,8 @@ create_process:
 	add esp, 4
 
 	; copy cwd
-	mov ecx, [esp + 28]
+	mov ecx, [esp + 32]
 	mov [eax + 8], ecx
-
-	push edi
 
 	; 
 	mov edx, DEF_HS_SPREAD - 0x1000
@@ -246,17 +247,14 @@ create_process:
 	rep movsb
 
 	pop ds
-	pop eax
-	
+	mov eax, [esp]	
 	push ebx
-	push eax
 
 	; copy args
 	mov edx, [esp + 48]	; argc
 	mov esi, [esp + 52] ; argv
 	
 	mov ecx, edi
-;	add ecx, [gs:ebx + 16]
 	lea edi, [ecx + edx * 4]
 	jmp .args_loop_check
 .args_loop:
@@ -280,8 +278,8 @@ create_process:
 	test edx, edx
 	jnz .args_loop
 
-	pop eax
 	pop ebx
+	pop eax
 
 	; set location of heap
 	sub edi, eax
@@ -307,6 +305,17 @@ create_process:
 	mov [ecx - 20], edx
 	mov dword [ecx - 24], 0
 	
+	; prep for stack underflow
+	push ecx
+	sub ecx, 0x1100
+	mov dword [ecx], 0
+	and ecx, ~0xfff
+	shr ecx, 10
+	mov edx, [PAGE_TABLES_LOC + ecx]
+	or edx, 4
+	mov [PAGE_TABLES_LOC + ecx], edx
+	pop ecx
+	
 	; create DS
 	push ecx
 	push 0x92c0
@@ -320,15 +329,7 @@ create_process:
 	mov [esi + 2], ax
 	and eax, 0xffff
 	mov [ecx - 16], eax
-	
-	; create SS
-	push 0x96c0
-	push (DEF_HS_SPREAD - 0x1000) / 0x1000 - 1
-	push edx
-	call add_gdt_entry
-	add esp, 12
-	mov edi, eax
-	
+
 	; alloc mem for thread structure
 	call kalloc_16
 	
@@ -336,7 +337,6 @@ create_process:
 	mov byte [eax], STATUS_SETUP
 	mov ecx, [esp + 24]
 	mov [eax + 1], cl
-	mov [eax + 2], di
 	mov dword [eax + 4], DEF_HS_SPREAD - 28
 	mov [eax + 8], esi
 	
@@ -386,21 +386,29 @@ proc_finish:
 	mov ds, ax
 	mov eax, [current_thread]
 	
-	mov edx, eax
+	mov ebx, eax
 .loop:
 	mov ecx, [eax + 12]
-	cmp edx, ecx
+	cmp ebx, ecx
 	je .break
 	mov eax, ecx
 	jmp .loop
 .break:
 
-	mov ecx, [edx + 12]
+	mov ecx, [ebx + 12]
 	mov [eax + 12], ecx
-	
-	mov byte [edx], STATUS_DONE
-	
+
+	; free process data if last thread
+	push dword [first_thread]
+	push dword [ebx + 8]
+	call locate_process_thread
+	test eax, eax
+	jnz .not_last_thread
+	call free_process
+.not_last_thread:
 	; TODO free structure if detached
+
+	mov byte [ebx], STATUS_DONE	
 
 	mov al, 1
 	out 0x40, al
@@ -426,6 +434,45 @@ wait_thread:
 .break:
 	push ecx
 	call kfree_16
+	add esp, 4
+	ret
+
+
+;  locate_process_thread(process_id, thread_start) 
+locate_process_thread:
+	mov edx, [esp + 4]
+	mov ecx, [esp + 8]
+	mov eax, ecx
+.loop:
+	cmp edx, [eax + 8]
+	je .break
+	mov eax, [eax + 12]
+	cmp eax, ecx
+	jne .loop
+	xor eax, eax
+.break:
+	ret
+
+
+; frees kernel 16-byte structures, and gdt entries
+; TODO free pages
+;  free_process(proc_id)
+free_process:
+	mov ecx, [esp + 4]
+	xor eax, eax
+	mov ax, [ecx]
+	push eax
+	mov ax, [ecx + 2]
+	push eax
+	push dword [ecx + 8]
+	push ecx
+	call kfree_16
+	add esp, 4
+	call kfree_16
+	add esp, 4
+	call remove_gdt_entry
+	add esp, 4
+	call remove_gdt_entry
 	add esp, 4
 	ret
 

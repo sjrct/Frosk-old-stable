@@ -18,21 +18,27 @@ setup_gdt:
 	cld
 	rep movsd
 	
+	xor eax, eax
+	mov ecx, 0x800
+	sub cx, [gdt_ptr]
+	rep stosb
+	
 	add edx, GDT_LOC
 	mov dword [first_free_gdte], edx
 	
-	mov word [gdt_ptr], 0x100
+	mov word [gdt_ptr], 0x800
 	lgdt [gdt_ptr]
 	ret
 
 
 ; adds an entry to the gdt, returns the selector for the segment
 ;  add_gdt_entry(base, size, [access][flags][4 unused bits])
+;
+; TODO bug w/ loop around + handling of no remaining segments
 add_gdt_entry:
 	; find free gdt entry
 	mov eax, [first_free_gdte]	
 	mov edx, eax
-	jmp .check_high
 .search_gdt_loop:
 	cmp dword [eax], 0
 	jne .search_gdt_loop_next
@@ -40,15 +46,17 @@ add_gdt_entry:
 	je .found
 .search_gdt_loop_next:
 	add eax, 8
-.check_high:
 	cmp eax, edx
 	je .nothing_left
 	cmp eax, GDT_LOC + 0x800
 	jne .search_gdt_loop
-	mov eax, GDT_LOC + 8
+	mov eax, GDT_LOC + 8	
 	jmp .search_gdt_loop
 .nothing_left:
 	; TODO
+	push 0x5ade
+	call kputh
+	jmp $
 .found:
 
 	; make sure still free
@@ -73,7 +81,6 @@ add_gdt_entry:
 	mov [eax + 6], cl
 
 	; store eax + 8
-	add eax, 8
 	mov [first_free_gdte], eax
 
 	; load the gdt pointer; might need to disable interrupts for more time
@@ -82,7 +89,7 @@ add_gdt_entry:
 	lgdt [gdt_ptr]
 	popf
 	
-	sub eax, GDT_LOC + 8	
+	sub eax, GDT_LOC
 	ret
 
 

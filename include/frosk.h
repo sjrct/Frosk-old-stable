@@ -38,7 +38,10 @@ int __drvrcall4(int f, int d, int x, int y, int z, int v);
 #define wait_thread(X)            __syscall1(8,X)
 #define f300_find_first(X)        __syscall1(9,X)
 #define f300_find_next(X)         __syscall1(10,X)
-#define _debug_puth(X)            __syscall1(11,X)
-#define _debug_puts(X)            __syscall1(12,X)
+#define ata_write_pio(X,Y,Z,T)    __syscall4(11,X,Y,Z,T)
+#define f300_create_node(X,Y,Z)   __syscall3(12,X,Y,(int)Z)
+#define kill_current()            __syscall0(13)
+#define _debug_puth(X)            __syscall1(14,X)
+#define _debug_puts(X)            __syscall1(15,X)
 
 #endif

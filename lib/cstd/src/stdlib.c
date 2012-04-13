@@ -6,6 +6,7 @@
 // note: does not contain code for every stdlib.h function
 //
 
+#include <frosk.h>
 #include <stdlib.h>
 
 int abs(int x)
@@ -34,4 +35,9 @@ ldiv_t ldiv(long x, long y)
 	r.quot = x / y;
 	r.rem = x % y;
 	return r;
+}
+
+void exit(int status)
+{
+	kill_current();
 }
