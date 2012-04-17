@@ -1,19 +1,33 @@
 FROSK README
 
 DESCRIPTION:
+
 Frosk is a 32-bit, multitasking os for an x86 architecture.  It is written in
 NASM and C.
 
+
 DIRECTORIES:
-    boot    Contains assembly code for the boot loader.
-    drvr    Contains code for drivers for frosk.
-    files   Miscellaneous files.
-    include C header files used when compiling frosk programs.
-    kernel  Contains code for the frosk kernel.
-    lib     Contains C standard/fapi library code.
-    prgm    Contains programs for frosk.
-    util    Contains programs that help build frosk.
+
+boot    Contains assembly code for the boot loader.
+drvr    Contains code for drivers for frosk.
+files   Miscellaneous files.
+include C header files used when compiling frosk programs.
+kernel  Contains code for the frosk kernel.
+lib     Contains C standard/fapi library code.
+prgm    Contains programs for frosk.
+util    Contains programs that help build frosk.
+
 
 BUGS (Not complete list):
-    -Will only work with drive number 0 (Primary master ATA)
-    -Does not take partitions into account. 
+
+Will only work with drive number 0 (Primary master ATA)
+Does not take partitions into account.
+
+
+LICENSE
+
+By interacting with frosk, or any file distributed with it, you agree to the
+terms and conditions.
+
+The above mentioned terms and conditions are as follows:
+Be nice.
