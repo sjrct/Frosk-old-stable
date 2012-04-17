@@ -35,9 +35,15 @@ init:
 	push cs
 	push key_int - call_drvr
 	push 0x21
+
+	mov ecx, esp
+	push ss
+	push ecx
 	mov eax, 7
 	int 0x40
-	add esp, 16
+
+	add esp, 24
+
 	; make sure leds are disabled
 	mov al, 0xed
 	out 0x64, al
@@ -56,9 +62,12 @@ key_int:
 	push es
 	
 	push DRVR_ID
+	mov ecx, esp
+	push ss
+	push ecx
 	mov eax, 6	; drvr_exists
 	int 0x40
-	add esp, 4
+	add esp, 12
 
 	mov cx, 0x10	; Kernel DS
 	mov es, cx

@@ -22,8 +22,8 @@ main:
 	call setup_virt_mem_mgr
 	call setup_f300
 	call setup_drvrs
-	call setup_scheduler
-	
+	call setup_tss
+
 	; run start program
 	push start_prgm
 	call f300_locate_node
@@ -41,6 +41,8 @@ main:
 	push eax
 	push START_PRGM_MEM
 	call ata_read_pio
+
+	sti
 	
 	push 0
 	push 0
@@ -49,7 +51,7 @@ main:
 	push START_PRGM_MEM
 	call create_process
 
-	sti
+	call setup_scheduler
 
 .hltlp:
 	hlt
@@ -67,5 +69,6 @@ main:
 %include "kernel/scheduler.asm"
 %include "kernel/syscall.asm"
 %include "kernel/drivers.asm"
+%include "kernel/tss.asm"
 
 %include "kernel/data.asm"

@@ -78,24 +78,34 @@
 #define SC_NUM_LOCK      0x45
 #define SC_SCROLL_LOCK   0x46
 #define SC_KEYPAD_7      0x47
+#define SC_HOME          0x47
 #define SC_KEYPAD_8      0x48
+#define SC_UP_ARROW      0x48
 #define SC_KEYPAD_9      0x49
+#define SC_PGUP          0x49
 #define SC_KEYPAD_MINUS  0x4A
 #define SC_KEYPAD_4      0x4B
+#define SC_LEFT_ARROW    0x4B
 #define SC_KEYPAD_5      0x4C
 #define SC_KEYPAD_6      0x4D
+#define SC_RIGHT_ARROW   0x4D
 #define SC_KEYPAD_PLUS   0x4E
 #define SC_KEYPAD_1      0x4F
+#define SC_END           0x4F
 #define SC_KEYPAD_2      0x50
+#define SC_DOWN_ARROW    0x50
 #define SC_KEYPAD_3      0x51
+#define SC_PGDOWN        0x51
 #define SC_KEYPAD_0      0x52
+#define SC_INSERT        0x52
 #define SC_KEYPAD_PERIOD 0x53
+#define SC_DELETE        0x53
 #define SC_SUPER         0x56
 #define SC_F11           0x57
 #define SC_F12           0x58
 
-#define SC_ESCAPED_SC1   0xE0
-#define SC_ESCAPED_SC2   0xE1
+#define SC_ESCAPED_0     0xE0
+#define SC_ESCAPED_1     0xE1
 
 #define SC_BREAK 0x80
 #define IS_KEY_BREAK(X) (X & SC_BREAK)

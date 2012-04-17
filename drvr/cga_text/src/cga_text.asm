@@ -232,9 +232,26 @@ puti:
 	ret
 
 
-;
+; outputs a character to a specific location on the screen
+; the cursor remains unchanged
+;  outc(x, y, char)
 outc:
-	; TODO
+	mov eax, [esp + 8]
+	imul eax, 80 * 2
+	mov ecx, [esp + 4]
+	shl ecx, 1
+	add eax, ecx
+	add eax, 0xb8000
+
+	mov ecx, [esp + 12]
+	mov edx, [ink - data_start]
+	mov ch, dl
+
+	push ds
+	mov dx, 0x10 ;	kern ds
+	mov ds, dx
+	mov [eax], cx
+	pop ds
 	ret
 
 
@@ -320,9 +337,29 @@ hidecursor:
 	ret
 
 
-;
+;  setcursor(x,y)
 setcursor:
-	; TODO
+	mov ecx, [esp + 8]
+	imul ecx, 80
+	add ecx, [esp + 4]
+	mov eax, ecx
+	shl eax, 1
+	add eax, 0xb8000
+	mov [buffer_loc - data_start], eax
+
+	mov dx, 0x3d4
+	mov al, 0xf
+	out dx, al
+	inc dx
+	mov al, cl
+	out dx, al
+
+	dec dx
+	mov al, 0xe
+	out dx, al
+	inc dx
+	mov al, ch
+	out dx, al
 	ret
 
 

@@ -24,13 +24,14 @@ int main()
 	char tok[MAX_SIZE];
 	char copy[MAX_SIZE + 6];
 
+	textdrvr_init();
 	setink(COL4_GREEN);
 	setcursorsize(0xd,0xe);
 	cls();
 	kbdrvr_init();
-	
+
 	puts("frash\n");
-	
+
 	change_dir("!", cd);
 	
 	while (1) {

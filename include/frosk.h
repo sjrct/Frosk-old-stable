@@ -43,5 +43,6 @@ int __drvrcall4(int f, int d, int x, int y, int z, int v);
 #define kill_current()            __syscall0(13)
 #define _debug_puth(X)            __syscall1(14,X)
 #define _debug_puts(X)            __syscall1(15,X)
+#define _dummy()                  __syscall0(16)
 
 #endif

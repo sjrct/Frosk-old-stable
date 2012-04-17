@@ -65,7 +65,6 @@ first_fs_blocks: dd 0
 fs_drive: db 0
 
 ; table pointers
-db 0 ; align
 gdt_ptr: dw 0, 0, 0
 dw 0
 idt_ptr: dw 0, 0, 0

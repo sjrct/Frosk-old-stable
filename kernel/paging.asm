@@ -61,8 +61,13 @@ page_fault:
 	mov eax, [esp + 16]
 	test eax, 1
 	jz .not_present
-	
+		
 	; page protection fault (stack underflow)
+;	push eax
+;	call kputh
+;	mov eax, cr2
+;	push eax
+;	call kputh
 	push 0x1337c0de
 	call kputh
 	jmp $

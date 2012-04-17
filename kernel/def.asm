@@ -15,9 +15,8 @@
 %define PAGE_TBL1_LOC   0x42000
 %define IDT_LOC         0x43000
 %define GDT_LOC         0x43800
-%define STACK_SEG_TSS   0x44000
-%define STACK_SEG_STACK 0x44200
-%define START_PRGM_MEM  0x44200
+%define TSS_SEG_LOC     0x44000
+%define START_PRGM_MEM  0x44100
 %define KERN_STACK      0x80000
 %define KERN_MEM_LOC    0x100000
 %define PAGE_TABLES_LOC 0x400000

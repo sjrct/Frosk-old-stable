@@ -28,19 +28,41 @@ setup_drvrs:
 ;  eax = function num, ecx = driver id
 drvrcall_int:
 	push ebp
-	mov ebp, esp
+	mov ebp, [esp + 16]
+	sub ebp, 16
 	push ecx
 	push edx
 	push ds
 	push es
 	push gs
 
-	mov dx, ds
+	mov dx, ss
 	mov gs, dx
 	mov dx, KERN_DS
 	mov ds, dx
 	mov es, dx
-
+%ifdef asdfsdfasdfasdf
+	cli
+	push dword [ebp]
+	call kputh
+	push dword [ebp + 4]
+	call kputh
+	push dword [ebp+8]
+	call kputh
+	push dword [ebp+12]
+	call kputh
+	call knewline
+	push dword [ebp+16]
+	call kputh
+	push dword [ebp+20]
+	call kputh
+	push dword [ebp+24]
+	call kputh
+	push dword [ebp+28]
+	call kputh
+	hlt
+	jmp $
+%endif
 	push eax
 	push ecx
 	call drvr_exists
@@ -168,7 +190,7 @@ create_drvr:
 
 	mov ebx, [esp + 16]
 	; TODO test mark
-	
+
 	mov eax, [gs:ebx + 20]
 	test eax, eax
 	jz .return
@@ -231,7 +253,6 @@ create_drvr:
 	add esi, ebx
 	mov ecx, [gs:ebx + 8]
 	rep movsb
-	
 	pop ds
 	pop edi
 	

@@ -10,6 +10,7 @@
 void load_drvr(const char * fn);
 void exec_prgm(const char * fn);
 void operate_file(const char * fn, void (*oper)(const char*));
+void foo();
 
 int main()
 {
@@ -17,6 +18,11 @@ int main()
 	operate_file("!sys/start_drvrs", load_drvr);
 	operate_file("!sys/start_prgms", exec_prgm);
 	return 0;
+}
+
+void foo()
+{
+	while(1);
 }
 
 char * read_file(const char * fn)
@@ -49,7 +55,7 @@ void operate_file(const char * fn, void (*oper)(const char*))
 	buf = read_file(fn);
 	if (buf == NULL) return;
 	str = buf;
-		
+	
 	while (*buf != '\0') {
 		if (*buf == '\n') {
 			*buf = '\0';

@@ -83,12 +83,10 @@ add_gdt_entry:
 	; store eax + 8
 	mov [first_free_gdte], eax
 
-	; load the gdt pointer; might need to disable interrupts for more time
-	pushf
-	cli	
+;	cli	
 	lgdt [gdt_ptr]
-	popf
-	
+;	sti
+
 	sub eax, GDT_LOC
 	ret
 

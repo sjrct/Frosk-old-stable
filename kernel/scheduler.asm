@@ -5,8 +5,9 @@
 ;
 ; process structure:
 ;   word cs
-;   word ds
-;   dword 
+;   word ds/ss (ring 0)
+;   word ds/ss (ring 3)
+;   word 
 ;   dword extra data ptr
 ;   dword next
 ;
@@ -18,8 +19,8 @@
 ;
 ; thread structure:
 ;   byte status
-;   byte priority
-;   word 
+;   byte [kern_stack_high, 4 bits][priority, 4 bits]
+;   word kern_stack_low (* page_size)
 ;   dword esp
 ;   dword proc handle
 ;   dword next
@@ -92,7 +93,8 @@ timer_int:
 	push es
 	push fs
 	push gs
-	
+
+	pushf
 	push cs
 	push .return_here
 	
@@ -104,14 +106,22 @@ timer_int:
 	mov [current_thread], ecx
 
 	; get new stack
+	mov edx, [ecx + 8]
 	mov esp, [ecx + 4]
-	mov ecx, [ecx + 8]
-	mov ss, [ecx + 2]
+	mov ss, [edx + 2]
+	mov [TSS_SEG_LOC + 8], ss
+	
+	mov al, [ecx + 1]
+	and al, 0xf0
+	shl eax, 12
+	or ax, [ecx + 2]
+	shl eax, 12
+	mov [TSS_SEG_LOC + 4], eax
 
 	; goto new thread
 	mov al, bl
 	out 0x40, al
-	retf
+	iret
 .return_here:
 
 	; restore old context
@@ -185,14 +195,15 @@ create_process:
 	
 	; create CS
 	shr ecx, 12
-	push 0x9ac0
+	push 0xfac0
 	push ecx
 	push eax
 	call add_gdt_entry
 	pop edx
 	mov [esi], ax
+	or word [esi], 3
 	add esp, 8
-	
+
 	push esi
 	pushf
 	push edi
@@ -204,16 +215,16 @@ create_process:
 	mov edi, edx		
 	mov ecx, setup_code.end - setup_code
 	rep movsb
-	
+
 	; copy user code
 	mov ax, gs
 	mov ds, ax
-	
+
 	mov esi, [gs:ebx + 4]
 	add esi, ebx
 	mov ecx, [gs:ebx + 8]
 	rep movsb
-	
+
 	pop ds
 	mov edi, [esp]
 
@@ -292,6 +303,7 @@ create_process:
 	; setup stack
 	mov ecx, DEF_HS_SPREAD - 4
 	add ecx, eax
+
 	mov dword [ecx], KERN_CS
 	mov dword [ecx - 4], proc_finish
 	mov edx, [gs:ebx + 16]
@@ -299,12 +311,17 @@ create_process:
 	mov dword [ecx - 8], edx
 	mov edx, [esp + 28]
 	mov dword [ecx - 12], edx
+	mov dword [ecx - 24], DEF_HS_SPREAD - 20
+	pushf
+	mov edx, [esp]
+	add esp, 4
+	mov [ecx - 28], edx
 
 	xor edx, edx
 	mov dx, [esi]
-	mov [ecx - 20], edx
-	mov dword [ecx - 24], 0
-	
+	mov [ecx - 32], edx
+	mov dword [ecx - 36], 0
+		
 	; prep for stack underflow
 	push ecx
 	sub ecx, 0x1100
@@ -315,29 +332,43 @@ create_process:
 	or edx, 4
 	mov [PAGE_TABLES_LOC + ecx], edx
 	pop ecx
-	
-	; create DS
+
+	; create DSs	
 	push ecx
-	push 0x92c0
-	push DEF_HS_SPREAD / 0x1000 - 1
+
+	push 0xf2c0
+	push DEF_HS_SPREAD / 0x1000
 	push eax
 	call add_gdt_entry
+	or ax, 3
+	mov [esi + 4], ax
+	and eax, 0xffff
+	mov ecx, [esp + 12]
+	mov [ecx - 16], eax
+	mov [ecx - 20], eax
+	pop eax
+	add esp, 8
+
+	push 0x92c0
+	push DEF_HS_SPREAD / 0x1000
+	push eax
+	call add_gdt_entry
+	mov [esi + 2], ax
 	pop edx
 	add esp, 8
+
 	pop ecx
 	
-	mov [esi + 2], ax
-	and eax, 0xffff
-	mov [ecx - 16], eax
-
 	; alloc mem for thread structure
 	call kalloc_16
 	
 	; setup thread structure
 	mov byte [eax], STATUS_SETUP
 	mov ecx, [esp + 24]
+	or cl, (((DEF_HS_SPREAD - 0x1000) >> 24) & 0xf0)
 	mov [eax + 1], cl
-	mov dword [eax + 4], DEF_HS_SPREAD - 28
+	mov word [eax + 2], ((DEF_HS_SPREAD - 0x1000) >> 12) & 0xffff
+	mov dword [eax + 4], DEF_HS_SPREAD - 40
 	mov [eax + 8], esi
 	
 	; add to linked list
@@ -372,13 +403,13 @@ setup_code:
 	mov gs, ax
 	call .end
 	add esp, 8
-	retf
+	mov eax, 13
+	int 0x40
 	times 0x20 - ($ - setup_code) db 0
 .end:
 
 
-; this function is called through a retf in the setup code on the termination
-; of the process
+; this function is syscall, eax = 13, used automatically when process dies
 proc_finish:
 	mov ax, ds
 	mov gs, ax
@@ -414,6 +445,7 @@ proc_finish:
 	out 0x40, al
 	dec al
 	out 0x40, al
+	sti
 .hltlp:
 	hlt
 	jmp .hltlp

@@ -29,13 +29,15 @@ setup_idt:
 	mov edx, gpf
 	mov eax, 0xd
 	call set_idt_entry
-		
+	
 	; trap gates
 	mov bl, 0x8f
 	mov edx, timer_int
 	mov eax, 0x20
 	call set_idt_entry
-	
+
+	; software traps from userspace
+	mov bl, 0xef	
 	mov edx, syscall_int
 	mov eax, 0x40
 	call set_idt_entry
@@ -143,11 +145,14 @@ default_int_handler:
 	mov es, ax
 	mov gs, ax
 
-	call knewline
 	push dih_msg
 	call kputs
+	mov eax, [esp + 4]
+	push eax
+	call kputh
 	jmp $
 	iret
 	
 dih_msg:
 	db 'unregistered interrupt', 0
+	

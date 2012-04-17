@@ -8,7 +8,7 @@ SHELL       = /bin/sh
 TARGET      = frosk.img
 
 # name of dir/exec in prgm directory (for programs on frosk)
-PRGMS_B     = start frash echo ls cls scdisp mkdir lddrvr sc
+PRGMS_B     = start frash echo ls cls scdisp mkdir lddrvr sc vec
 
 # name of dir/exec in util directory (for programs to help build frosk)
 UTILS_B     = f300-builder

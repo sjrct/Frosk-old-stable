@@ -12,27 +12,32 @@ syscall_int:
 	push ds
 	push es
 	push gs
+	push ebx
 	push ebp
-	mov ebp, esp
+	mov ebp, [esp + 40]
+	sub ebp, 4
 
-	mov dx, ds
+	mov dx, ss
 	mov gs, dx
 	mov dx, KERN_DS
 	mov ds, dx
 	mov es, dx
 
 	mov ecx, [syscall_tbl + eax * 8 + 4]
+	mov ebx, ecx
 .push_loop:
 	jecxz .push_loop_break
-	push dword [ebp + 0x20 + ecx * 4]
+	push dword [ebp + ecx * 4]
 	dec ecx
 	jmp .push_loop
 .push_loop_break:
 
 	call [syscall_tbl + eax * 8]
 
-	mov esp, ebp
+	lea esp, [esp + ebx * 4]
+
 	pop ebp
+	pop ebx
 	pop gs
 	pop es
 	pop ds
