@@ -24,7 +24,7 @@ Will only work with drive number 0 (Primary master ATA)
 Does not take partitions into account.
 
 
-LICENSE
+LICENSE:
 
 By interacting with frosk, or any file distributed with it, you agree to the
 terms and conditions.

@@ -26,7 +26,7 @@ void stack_check()
 	f = clock();
 	do {
 		c = clock();
-	} while (c - f < 0x2000000);
+	} while (c - f < 0x400000);
 
 	stack_check();
 }

@@ -12,8 +12,6 @@
 main:
 	mov byte [fs_drive], 0x0	; FIXME
 
-	call kcls	; temporary
-	
 	call setup_paging
 	call setup_phys_mem_mgr
 	call setup_idt
@@ -43,7 +41,7 @@ main:
 	call ata_read_pio
 
 	sti
-	
+
 	push 0
 	push 0
 	push PRIORITY_HIGH

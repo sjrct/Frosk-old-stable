@@ -25,6 +25,7 @@ process_lists:
 drvr_tree_head: dd 0
 
 ; table of system calls
+;  entry: [dword function_ptr][dword arg count]
 syscall_tbl:
 	dd f300_locate_node
 	dd 1
@@ -65,6 +66,7 @@ first_fs_blocks: dd 0
 fs_drive: db 0
 
 ; table pointers
+db 0 ; align
 gdt_ptr: dw 0, 0, 0
 dw 0
 idt_ptr: dw 0, 0, 0

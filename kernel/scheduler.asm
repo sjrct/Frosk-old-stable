@@ -32,6 +32,8 @@
 ;   dword static data section start
 ;   dword static data section size
 ;
+; TODO: cleanup this file
+;
 
 ; sets up scheduling
 setup_scheduler:
@@ -117,6 +119,10 @@ timer_int:
 	or ax, [ecx + 2]
 	shl eax, 12
 	mov [TSS_SEG_LOC + 4], eax
+
+	; flush tlb, TODO: optimize
+	mov eax, cr3
+	mov cr3, eax
 
 	; goto new thread
 	mov al, bl
@@ -230,8 +236,8 @@ create_process:
 
 	; TODO: fix so default is only used when alternative not specified
 	; alloc virt data pages
-	mov dword [edi + 12], DEF_HS_SPREAD
-	push DEF_HS_SPREAD
+	mov dword [edi + 12], DEF_HS_SPREAD + 0x1000
+	push DEF_HS_SPREAD + 0x1000
 	call alloc_virt_pgs
 	mov [edi + 8], eax
 	add esp, 4
@@ -241,7 +247,7 @@ create_process:
 	mov [eax + 8], ecx
 
 	; 
-	mov edx, DEF_HS_SPREAD - 0x1000
+	mov edx, DEF_HS_SPREAD - 0x2000
 	sub edx, ecx
 	mov [eax + 16], edx
 		
@@ -324,20 +330,20 @@ create_process:
 		
 	; prep for stack underflow
 	push ecx
-	sub ecx, 0x1100
+	add ecx, 0x1000
 	mov dword [ecx], 0
 	and ecx, ~0xfff
 	shr ecx, 10
 	mov edx, [PAGE_TABLES_LOC + ecx]
-	or edx, 4
-	mov [PAGE_TABLES_LOC + ecx], edx
+	and edx, ~2
+	mov [PAGE_TABLES_LOC + ecx], edx	
 	pop ecx
 
 	; create DSs	
 	push ecx
 
 	push 0xf2c0
-	push DEF_HS_SPREAD / 0x1000
+	push DEF_HS_SPREAD / 0x1000 + 1
 	push eax
 	call add_gdt_entry
 	or ax, 3
@@ -350,7 +356,7 @@ create_process:
 	add esp, 8
 
 	push 0x92c0
-	push DEF_HS_SPREAD / 0x1000
+	push DEF_HS_SPREAD / 0x1000 + 1
 	push eax
 	call add_gdt_entry
 	mov [esi + 2], ax
@@ -365,9 +371,9 @@ create_process:
 	; setup thread structure
 	mov byte [eax], STATUS_SETUP
 	mov ecx, [esp + 24]
-	or cl, (((DEF_HS_SPREAD - 0x1000) >> 24) & 0xf0)
+	or cl, (((DEF_HS_SPREAD + 0x1000) >> 24) & 0xf0)
 	mov [eax + 1], cl
-	mov word [eax + 2], ((DEF_HS_SPREAD - 0x1000) >> 12) & 0xffff
+	mov word [eax + 2], ((DEF_HS_SPREAD + 0x1000) >> 12) & 0xffff
 	mov dword [eax + 4], DEF_HS_SPREAD - 40
 	mov [eax + 8], esi
 	

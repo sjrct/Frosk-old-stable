@@ -52,27 +52,9 @@ page_fault:
 	push ecx
 	push edx
 	push gs
-	pushf
 
 	mov ax, KERN_DS
 	mov gs, ax
-	
-	; check if something not present or protection fault
-	mov eax, [esp + 16]
-	test eax, 1
-	jz .not_present
-		
-	; page protection fault (stack underflow)
-;	push eax
-;	call kputh
-;	mov eax, cr2
-;	push eax
-;	call kputh
-	push 0x1337c0de
-	call kputh
-	jmp $
-	
-.not_present:
 
 	; get pte and pdte
 	mov edx, cr2
@@ -82,6 +64,20 @@ page_fault:
 	and ecx, 0xffc
 	and edx, ~0x3
 	
+	; check if something not present or protection fault
+	mov eax, [esp + 12]
+	test eax, 1
+	jz .not_present
+
+	; page protection fault
+	mov ax, KERN_DS
+	mov ds, ax
+	push 0x1337c0de
+	call kputh
+	jmp $
+	
+.not_present:
+
 	test byte [gs:PAGE_DIR_LOC + edx], 1
 	jnz .page_not_present
 	
@@ -121,11 +117,10 @@ page_fault:
 	call get_free_phys_page
 	pop edx
 	pop ecx
-	or eax, 0x7
+	or eax, 7
 
 	mov [gs:PAGE_TABLES_LOC + edx + ecx], eax
 
-	popf
 	pop gs
 	pop edx
 	pop ecx
