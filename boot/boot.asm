@@ -65,7 +65,7 @@ mem_map_loop:
 	mov dx, [bx]
 
 	; read the fs from the drive
-	mov cx, 3
+	mov cx, 5
 read1_again:
 	mov ah, 0x42
 	mov si, dap
@@ -74,7 +74,7 @@ read1_again:
 
 	dec cx
 	test cx, cx
-	jne read1_again
+	jnz read1_again
 	jmp error16 ; 2
 read1_good:
 
@@ -150,7 +150,7 @@ search_for_kern_loop:
 	mov [dap + 12], eax
 	mov dword [dap + 4], KERN_ORG
 
-	mov cx, 3
+	mov cx, 5
 read2_again:
 	mov ah, 0x42
 	mov si, dap
@@ -219,6 +219,7 @@ error_msg:
 	db 'E', 4, 'r', 4, 'r', 4, 'o', 4, 'r', 4, ' ', 4
 error_msg_num:
 	db '0', 4
+	db ' ', 4
 error_msg_size:
 	dw 14
 

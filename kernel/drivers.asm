@@ -41,28 +41,7 @@ drvrcall_int:
 	mov dx, KERN_DS
 	mov ds, dx
 	mov es, dx
-%ifdef asdfsdfasdfasdf
-	cli
-	push dword [ebp]
-	call kputh
-	push dword [ebp + 4]
-	call kputh
-	push dword [ebp+8]
-	call kputh
-	push dword [ebp+12]
-	call kputh
-	call knewline
-	push dword [ebp+16]
-	call kputh
-	push dword [ebp+20]
-	call kputh
-	push dword [ebp+24]
-	call kputh
-	push dword [ebp+28]
-	call kputh
-	hlt
-	jmp $
-%endif
+
 	push eax
 	push ecx
 	call drvr_exists

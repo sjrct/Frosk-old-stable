@@ -8,6 +8,7 @@ b:[name = !, contents = {
 		f:[name = echo, actual = prgm/echo/echo, #executable]
 		f:[name = frash, actual = prgm/frash/frash, #executable]
 		f:[name = lddrvr, actual = prgm/lddrvr/lddrvr, #executable]
+		f:[name = logo, actual = prgm/logo/logo, #executable]
 		f:[name = ls, actual = prgm/ls/ls, #executable]
 		f:[name = mkdir, actual = prgm/mkdir/mkdir, #executable]
 		f:[name = sc, actual = prgm/sc/sc, #executable]

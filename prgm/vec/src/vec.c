@@ -3,6 +3,10 @@
 //
 // written by sjrct
 //
+// TODO:
+//   fix scrolling bug
+//   test/debug line continuations
+//
 
 #include <stdlib.h>
 #include <fapi.h>
@@ -13,9 +17,9 @@
 
 #define TAB_SIZE 4
 
-#define NORM_INK 0x70
-#define CUR_INK  0x07
-#define INFO_INK 0x78
+#define NORM_INK COL4_GREEN
+#define CUR_INK  COL4_GREEN << 4
+#define INFO_INK COL4_LGREEN
 
 typedef struct line {
 	int sz;
@@ -28,11 +32,12 @@ typedef struct line {
 
 static int curx;
 static line *first, *view, *curline;
-static char * filename = "newfile.txt";
+static const char * filename = "newfile.txt";
 
 void draw();
 void load_file(const char * fn);
 void empty_file();
+void save();
 line * insert_line(line * p, int is_cont);
 int insert_char(line * l, int x, int c);
 void remove_line(line * l);
@@ -146,8 +151,9 @@ int main(int argc, char ** argv)
 						curline = curline->next;
 						curx = 0;
 					} else if (curx >= SCREEN_WIDTH) {
-						if (curline->next->is_cont) curline = curline->next;
-						else curline = insert_line(curline, 1);
+						if (!curline->next->is_cont)
+							insert_line(curline, 1);
+						curline = curline->next;
 						curx = 0;
 					}
 				}
@@ -201,9 +207,20 @@ void draw()
 	puts(filename);
 }
 
+void recalc_line_nums()
+{
+	line * l = first;
+	int n = -1;
+	while (l != NULL) {
+		if (!l->is_cont) n++;
+		l->line_num = n;
+		l = l->next;
+	}
+}
+
 line * insert_line(line * p, int is_cont)
 {
-	line * r;
+	line *r;
 	r = malloc(sizeof(line));
 	
 	r->is_cont = is_cont;
@@ -212,9 +229,9 @@ line * insert_line(line * p, int is_cont)
 	
 	if (p != NULL) {
 		r->next = p->next;
+		if (r->next != NULL) r->next->prev = r;
 		p->next = r;
-		if (!is_cont) r->line_num = p->line_num + 1;
-		else r->line_num = 0;
+		recalc_line_nums();
 	} else {
 		r->next = NULL;
 		r->line_num = 0;
@@ -260,7 +277,10 @@ int insert_char(line * l, int x, int c)
 void remove_line(line * l)
 {
 	if (l->prev != NULL) l->prev->next = l->next;
-	if (l->next != NULL) l->next->prev = l->prev;
+	if (l->next != NULL) {
+		l->next->prev = l->prev;
+		recalc_line_nums();
+	}
 	free(l);
 }
 
@@ -336,4 +356,9 @@ void load_file(const char * fn)
 		// TODO
 		exit(0);
 	}
+}
+
+void save()
+{
+	//TODO
 }

@@ -502,11 +502,15 @@ free_process:
 	push eax
 	mov ax, [ecx + 2]
 	push eax
+	mov ax, [ecx + 4]
+	push eax
 	push dword [ecx + 8]
 	push ecx
 	call kfree_16
 	add esp, 4
 	call kfree_16
+	add esp, 4
+	call remove_gdt_entry
 	add esp, 4
 	call remove_gdt_entry
 	add esp, 4

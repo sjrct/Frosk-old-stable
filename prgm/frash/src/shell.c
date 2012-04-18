@@ -8,6 +8,7 @@
 #include <scancodes.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define MAX_SIZE 128
 
@@ -15,8 +16,9 @@ char* getstr();
 int gettok(char*, char*);
 void change_dir(char * new, char * dest);
 int exec_prgm(const char * fn, char * argsu);
+void delay(clock_t);
 
-int main()
+int main(int argc, char ** argv)
 {
 	int d, handle, wait;
 	char * str;
@@ -24,11 +26,21 @@ int main()
 	char tok[MAX_SIZE];
 	char copy[MAX_SIZE + 6];
 
-	textdrvr_init();
-	setink(COL4_GREEN);
-	setcursorsize(0xd,0xe);
-	cls();
-	kbdrvr_init();
+	if (argc == 0) {
+		// do setup code if ran from !prgm/start
+		// this should eventually be moved out of this file
+		textdrvr_init();
+		setink(COL4_GREEN);
+		setcursorsize(0xd,0xe);
+		cls();
+		kbdrvr_init();
+		
+		handle = exec_prgm("!prgm/logo", "!prgm/logo");
+		
+		// delay so prompt displayed after logo's cls, but before it finishes
+		// the delay time is quite arbitrary
+		if (handle != 0) delay(0x100000);
+	}
 
 	puts("frash\n");
 
@@ -73,6 +85,14 @@ int main()
 	}
 	
 	return 0;
+}
+
+void delay(clock_t clocks)
+{
+	clock_t s, c;
+	s = clock();
+	do c = clock();
+	while (c - s < clocks);
 }
 
 void change_dir(char * new, char * dest)
