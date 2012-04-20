@@ -14,4 +14,6 @@ int main(int argc, char ** argv)
 	}
 	
 	cls();
+	
+	return 0;
 }

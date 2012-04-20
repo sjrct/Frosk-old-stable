@@ -36,8 +36,8 @@ setup_idt:
 	mov eax, 0x20
 	call set_idt_entry
 
-	; software traps from userspace
-	mov bl, 0xef	
+	; software traps available from userspace
+	mov bl, 0xef
 	mov edx, syscall_int
 	mov eax, 0x40
 	call set_idt_entry
@@ -45,13 +45,18 @@ setup_idt:
 	mov edx, drvrcall_int
 	mov eax, 0x41
 	call set_idt_entry
+
+	mov edx, priv_syscall_int
+	mov eax, 0x42
+	call set_idt_entry
 	
 	call setup_pic
 	lidt [idt_ptr]
+	sti
 	ret
 
 
-; temporary	
+; temporary
 gpf:
 	mov ax, KERN_DS
 	mov ds, ax
@@ -59,6 +64,8 @@ gpf:
 	mov gs, ax
 	call kputh
 	add esp, 4
+	call kputh
+	push ss
 	call kputh
 	call knewline
 	push gpf_msg
@@ -89,7 +96,9 @@ set_idt_entry_wrap:
 	mov edx, [esp + 16]
 	mov esi, [esp + 20]
 	mov ebx, [esp + 24]
+	cli
 	call set_idt_entry
+	sti
 	pop ebx
 	pop esi
 	ret
@@ -134,10 +143,10 @@ setup_pic:
 	out 0x21, al
 	mov al, PIC_SLAVE_MASK
 	out 0xa1, al
-	
+
 	ret
-	
-	
+
+
 ;  the default interrupt handler
 default_int_handler:
 	mov ax, KERN_DS
@@ -152,7 +161,6 @@ default_int_handler:
 	call kputh
 	jmp $
 	iret
-	
+
 dih_msg:
 	db 'unregistered interrupt', 0
-	

@@ -4,6 +4,14 @@
 ; written by sjrct
 ;
 
+; the port numbers for ata drives, only 1 should be defined
+; I have only tested the first
+; these should be detected in a future version
+;%define ATA_PORTS_1F0_3F0_HEX
+;%define ATA_PORTS_170_370_HEX
+;%define ATA_PORTS_1E8_3E0_HEX
+;%define ATA_PORTS_168_360_HEX
+
 ; memory locations
 %define MEM_MAP_LOC     0xc00
 %define FST_LOC         0x1000

@@ -10,7 +10,11 @@
 [org KERN_ORG]
 
 main:
-	mov byte [fs_drive], 0x0	; FIXME
+	mov al, dl
+	and al, 1
+	shr dl, 14
+	or dl, al
+	mov [fs_drive], dl
 
 	call setup_paging
 	call setup_phys_mem_mgr
@@ -40,8 +44,6 @@ main:
 	push START_PRGM_MEM
 	call ata_read_pio
 
-	sti
-
 	push 0
 	push 0
 	push PRIORITY_HIGH
@@ -50,6 +52,7 @@ main:
 	call create_process
 
 	call setup_scheduler
+	sti
 
 .hltlp:
 	hlt

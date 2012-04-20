@@ -324,7 +324,14 @@ f300_remove_node:
 
 
 ; appends a specified amount of blocks to a specified file
-;  append_file(node, blocks)
-append_file:
+;  f300_append_file(node, blocks)
+f300_append_file:
 	; TODO
+	ret
+
+
+; returns the drive that the current f300 file system is on
+f300_get_drive:
+	xor eax, eax
+	mov al, [fs_drive]
 	ret

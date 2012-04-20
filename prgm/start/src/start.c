@@ -20,11 +20,6 @@ int main()
 	return 0;
 }
 
-void foo()
-{
-	while(1);
-}
-
 char * read_file(const char * fn)
 {
 	f300_ptr node_id;
@@ -41,7 +36,7 @@ char * read_file(const char * fn)
 	blocks = f300_get_blocks(node);
 	buf = malloc(blocks * F300_BLOCK_SIZE);
 
-	ata_read_pio(buf, 0,
+	ata_read_pio(buf, f300_get_drive(),
 		(unsigned)(node.u.blstr.lba * (F300_BLOCK_SIZE / 512)),
 		blocks * (F300_BLOCK_SIZE / 512));
 	
@@ -80,6 +75,6 @@ void load_drvr(const char * fn)
 {
 	char * buf = read_file(fn);
 	if (buf == NULL) return;
-	create_drvr(buf);
+	create_drvr(buf);	
 	free(buf);
 }

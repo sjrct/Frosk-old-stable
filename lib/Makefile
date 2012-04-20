@@ -26,7 +26,13 @@ FAPIOBJS = $(addprefix fapi/obj/,$(FAPISRCB:.c=.o))
 
 
 .PHONY: all
-all: $(LIBCSTD) $(LIBFAPI)
+all: fapi/obj cstd/obj $(LIBCSTD) $(LIBFAPI)
+
+fapi/obj:
+	mkdir fapi/obj
+
+cstd/obj:
+	mkdir cstd/obj
 
 $(LIBCSTD): $(CSTDOBJS)
 	$(AR) rcu $@ $^

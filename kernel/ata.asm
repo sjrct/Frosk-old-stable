@@ -6,7 +6,7 @@
 
 
 ; this function detects ata bus devices
-; cx bit 7 = prim/sec bus, cx bit 0 = master/slave
+; cx = drive (bit 0 = master/slave, others = port base index * 2)
 ;
 ; TODO: when this is called twice, on the same bus and the first (master/slave)
 ;	exists, and then it is called on the other on the same bus, it will believe
@@ -20,11 +20,12 @@ ata_identify:
 	push edi
 	pushf
 
-	; check for floating bus
 	mov dx, cx
-	not dx
-	and dx, 0x80
-	add dx, 0x177
+	and dx, ~1
+	mov dx, [ata_port_bases]
+	add dx, 6
+
+	; check for floating bus
 	in al, dx
 	cmp al, 0xff
 	je .return_false
@@ -96,6 +97,7 @@ ata_identify:
 	; good, read 512 bytes
 	push dword 0x200
 ;	call kalloc
+	mov eax, 0x4000	; randumb number
 	add esp, 4
 	mov edi, eax
 	
@@ -125,7 +127,7 @@ ata_reset:
 	mov al, 0x2
 	out dx, al
 	io_wait
-	; idk what to do in between the writes to 376/3f6
+	; idk what to do in between the writes
 	xor al, al
 	out dx, al
 	ret
@@ -146,9 +148,9 @@ ata_read_pio:
 		
 	mov ecx, [ebp + 12]
 	mov dx, cx
-	not dx
-	and dx, 0x80
-	add dx, 0x176
+	and dx, ~1
+	mov dx, [ata_port_bases]
+	add dx, 6
 
 	; set specified drive & lba on & bits 24-27 of lba address
 	mov al, cl
@@ -176,7 +178,7 @@ ata_read_pio:
 	shr eax, 8
 	inc dx
 	out dx, al
-	
+
 	; send read command
 	add dx, 2
 	mov al, 0x20
@@ -196,12 +198,12 @@ ata_read_pio:
 	in al, dx
 	test al, 0x80
 	jne .wait_until_done
-	
+
 	; check for error
 	in al, dx
 	test al, 1
 	jne .return_err
-	
+
 	push es
 	mov ax, gs
 	mov es, ax
@@ -256,9 +258,9 @@ ata_write_pio:
 
 	mov ecx, [ebp + 12]
 	mov dx, cx
-	not dx
-	and dx, 0x80
-	add dx, 0x176
+	and dx, ~1
+	mov dx, [ata_port_bases]
+	add dx, 6
 
 	; set specified drive & lba on & bits 24-27 of lba address
 	mov al, cl

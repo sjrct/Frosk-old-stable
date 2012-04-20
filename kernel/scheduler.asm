@@ -63,7 +63,7 @@ timer_int:
 	mov ecx, [first_thread]
 	test ecx, ecx
 	jz .return_early
-	
+		
 	; get next task
 	; TODO: check for idle priority
 	mov ebx, ecx
@@ -78,7 +78,7 @@ timer_int:
 .search_loop_break:
 	mov eax, [ecx + 12]
 	mov [first_thread], eax
-	
+		
 	; reset the timer
 	xor al, al
 	out 0x40, al
@@ -163,6 +163,11 @@ create_process:
 
 	; check that buffer is valid
 	mov ebx, [esp + 16]
+	
+;	push dword [gs:ebx]
+;	call kputh
+;	jmp $
+		
 	cmp dword [gs:ebx], 0xfbe0fbe0
 	jne .return_zero
 
@@ -409,7 +414,7 @@ setup_code:
 	mov gs, ax
 	call .end
 	add esp, 8
-	mov eax, 13
+	mov eax, 9	; proc_finish
 	int 0x40
 	times 0x20 - ($ - setup_code) db 0
 .end:

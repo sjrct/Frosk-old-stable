@@ -24,7 +24,7 @@ int main(int argc, char ** argv)
 	char * str;
 	char cd[60];
 	char tok[MAX_SIZE];
-	char copy[MAX_SIZE + 6];
+	char copy[2 * MAX_SIZE + 7];
 
 	if (argc == 0) {
 		// do setup code if ran from !prgm/start
@@ -75,15 +75,20 @@ int main(int argc, char ** argv)
 				handle = exec_prgm(copy, str);
 				
 				if (handle == 0) {
-					puts("Error: Cannot execute file.\n");
-					continue;
+					copy[6 + strlen(tok)] = '/';
+					strcpy(copy + 7 + strlen(tok), tok);
+					handle = exec_prgm(copy, str);
+
+					if (handle == 0) {
+						puts("Error: Cannot execute file.\n");
+						continue;
+					}
 				}
 			}
 			
 			if (wait) wait_thread(handle);
 		}
 	}
-	
 	return 0;
 }
 
@@ -187,7 +192,7 @@ char * read_file(const char * fn)
 	blocks = f300_get_blocks(node);
 	buf = malloc(blocks * F300_BLOCK_SIZE);
 
-	ata_read_pio(buf, 0,
+	ata_read_pio(buf, f300_get_drive(),
 		(unsigned)(node.u.blstr.lba * (F300_BLOCK_SIZE / 512)),
 		blocks * (F300_BLOCK_SIZE / 512));
 	

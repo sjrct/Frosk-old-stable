@@ -43,7 +43,7 @@ char * read_file(const char * fn)
 	blocks = f300_get_blocks(node);
 	buf = malloc(blocks * F300_BLOCK_SIZE);
 
-	ata_read_pio(buf, 0,
+	ata_read_pio(buf, f300_get_drive(),
 		(unsigned)(node.u.blstr.lba * (F300_BLOCK_SIZE / 512)),
 		blocks * (F300_BLOCK_SIZE / 512));
 	

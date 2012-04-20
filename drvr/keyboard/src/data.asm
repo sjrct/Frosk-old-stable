@@ -6,6 +6,8 @@
 
 data_start:
 
+align 4
+
 func_tbl:
 	dd init - call_drvr
 	dd getsc - call_drvr

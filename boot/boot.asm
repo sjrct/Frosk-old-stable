@@ -14,6 +14,7 @@
 ; code section (16-bit) ;
 ;-----------------------;
 
+	jmp 0:start
 start:
 	; setup segment registers and stack
 	sub ax, ax
@@ -61,10 +62,35 @@ mem_map_loop:
 	inc byte [error_msg_num]
 	mov [MEM_MAP_LOC], di
 	
-	mov bx, sp
-	mov dx, [bx]
+	; enable the a20 line if disabled
+	xor cx, cx
+a20_retry:
+	mov ax, 0xffff
+	mov fs, ax
+	mov byte [ds:mark], 0
+	mov byte [fs:mark + 0x10], 0xff
+
+	cmp byte [ds:mark], 0xff
+	jne a20_enabled
+	
+	test cx, cx
+	jnz error16 ; 2
+
+	mov ax, 0x2401
+	int 0x15
+	jnc a20_enabled
+	
+	in al, 0x92	; fast a20, maybe should check if can use first
+	or al, 2
+	out 0x92, al
+	jmp a20_retry
+	; TODO more methods of enabling the a20 line?
+a20_enabled:
+	inc byte [error_msg_num]
 
 	; read the fs from the drive
+	mov bx, sp
+	mov dx, [bx]
 	mov cx, 5
 read1_again:
 	mov ah, 0x42
@@ -75,7 +101,7 @@ read1_again:
 	dec cx
 	test cx, cx
 	jnz read1_again
-	jmp error16 ; 2
+	jmp error16 ; 3
 read1_good:
 
 	inc byte [error_msg_num]
@@ -118,7 +144,7 @@ search_for_kern_loop:
 .next:
 	mov bx, [bx + 8]
 	test bx, bx
-	jz error16 ; 4
+	jz error16 ; 5
 	jmp search_for_kern_loop
 .break:
 
@@ -160,7 +186,7 @@ read2_again:
 	dec cx
 	test cx, cx
 	jne read2_again
-	jmp error16 ; 5
+	jmp error16 ; 6	
 read2_good:
 
 	; Load the temporary GDT
@@ -270,5 +296,5 @@ Data_Seg_Sel: equ gdt.data_seg - gdt
 
 ; Mark as bootable & fill remainder of first block
 times 0x1fe - ($ - $$) db 0
-dw 0xaa55
+mark: dw 0xaa55
 times 0x1000 - ($ - $$) db 0

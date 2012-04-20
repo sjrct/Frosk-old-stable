@@ -58,7 +58,7 @@ int main()
 		outc(i % 80, i / 80, disp[i]);
 		delay(0x20000);
 	}
-	
+
 	return 0;
 }
 

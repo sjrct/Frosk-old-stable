@@ -39,9 +39,9 @@ init:
 	mov ecx, esp
 	push ss
 	push ecx
-	mov eax, 7
-	int 0x40
-
+	xor eax, eax
+	int 0x42
+	
 	add esp, 24
 
 	; make sure leds are disabled
@@ -65,7 +65,7 @@ key_int:
 	mov ecx, esp
 	push ss
 	push ecx
-	mov eax, 6	; drvr_exists
+	mov eax, 4	; drvr_exists
 	int 0x40
 	add esp, 12
 

@@ -13,6 +13,8 @@ b:[name = !, contents = {
 		f:[name = mkdir, actual = prgm/mkdir/mkdir, #executable]
 		f:[name = sc, actual = prgm/sc/sc, #executable]
 		f:[name = scdisp, actual = prgm/scdisp/scdisp, #executable]
+		f:[name = showchars, actual = prgm/showchars/showchars, #executable]		
+		f:[name = showcolors, actual = prgm/showcolors/showcolors, #executable]
 		f:[name = vec, actual = prgm/vec/vec, #executable]
 	}]
 	

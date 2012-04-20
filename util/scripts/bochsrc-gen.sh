@@ -27,4 +27,4 @@ echo "config_interface: wx" >> $output
 echo "display_library: wx" >> $output
 echo "boot: disk" >> $output
 echo "log: /dev/stderr" >> $output
-
+echo "panic: action=report" >> $output

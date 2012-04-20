@@ -24,4 +24,4 @@ echo "config_interface: wx" >> %output%
 echo "display_library: wx" >> %output%
 echo "boot: disk" >> %output%
 echo "log: log.txt" >> %output%
-
+echo "panic: action=report" >> %output%
